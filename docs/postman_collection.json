@@ -1,0 +1,658 @@
+﻿{
+    "info":  {
+                 "name":  "Catatan Belajar API",
+                 "description":  "Collection untuk tugas LKPD: register, login, profil, logout, dan CRUD catatan pada API Laravel Sanctum (http://127.0.0.1:8003/api).\n\nCara pakai:\n1. Jalankan API: php artisan serve --host=127.0.0.1 --port=8003 (di project laravel_sanctum_api).\n2. Import file ini ke Postman.\n3. Jalankan folder Auth mulai dari Register, lalu Login. Token disimpan otomatis di variable koleksi.\n4. Jalankan folder Catatan.\n\nUrutan uji mengikuti LKPD: register valid, email duplikat, konfirmasi tidak cocok, profil dengan token, tambah catatan, daftar catatan, detail, logout.",
+                 "schema":  "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+             },
+    "variable":  [
+                     {
+                         "key":  "baseUrl",
+                         "value":  "http://127.0.0.1:8003/api"
+                     },
+                     {
+                         "key":  "token",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "postId",
+                         "value":  ""
+                     },
+                     {
+                         "key":  "test_email",
+                         "value":  ""
+                     }
+                 ],
+    "item":  [
+                 {
+                     "name":  "Auth",
+                     "item":  [
+                                  {
+                                      "name":  "Register",
+                                      "event":  [
+                                                    {
+                                                        "listen":  "prerequest",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.collectionVariables.set(\u0027test_email\u0027, \u0027siswa\u0027 + Date.now() + \u0027@gmail.com\u0027);"
+                                                                                ]
+                                                                   }
+                                                    },
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 201 Created\u0027, () =\u003e pm.response.to.have.status(201));",
+                                                                                    "const body = pm.response.json();",
+                                                                                    "pm.test(\u0027status bernilai true\u0027, () =\u003e pm.expect(body.status).to.eql(true));",
+                                                                                    "pm.test(\u0027token tersedia\u0027, () =\u003e pm.expect(body.data.token).to.be.a(\u0027string\u0027).and.not.empty);",
+                                                                                    "pm.test(\u0027nama sesuai\u0027, () =\u003e pm.expect(body.data.name).to.eql(\u0027Siswa LKPD\u0027));",
+                                                                                    "pm.collectionVariables.set(\u0027token\u0027, body.data.token);"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ],
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"name\": \"Siswa LKPD\",\n  \"email\": \"{{test_email}}\",\n  \"password\": \"password123\",\n  \"confirm_password\": \"password123\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/register",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "register"
+                                                                           ]
+                                                              }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Login",
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200 OK\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const body = pm.response.json();",
+                                                                                    "pm.test(\u0027status bernilai true\u0027, () =\u003e pm.expect(body.status).to.eql(true));",
+                                                                                    "pm.test(\u0027token tersedia\u0027, () =\u003e pm.expect(body.data.token).to.be.a(\u0027string\u0027).and.not.empty);",
+                                                                                    "pm.collectionVariables.set(\u0027token\u0027, body.data.token);"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ],
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"email\": \"{{test_email}}\",\n  \"password\": \"password123\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/login",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "login"
+                                                                           ]
+                                                              }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Profil Saya (Me)",
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200 OK\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const body = pm.response.json();",
+                                                                                    "pm.test(\u0027email sama dengan akun login\u0027, () =\u003e pm.expect(body.data.email).to.eql(pm.collectionVariables.get(\u0027test_email\u0027)));",
+                                                                                    "pm.test(\u0027jumlah_catatan berupa angka\u0027, () =\u003e pm.expect(body.data.jumlah_catatan).to.be.a(\u0027number\u0027));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ],
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/me",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "me"
+                                                                           ]
+                                                              }
+                                                  }
+                                  }
+                              ],
+                     "auth":  {
+                                  "type":  "bearer",
+                                  "bearer":  [
+                                                 {
+                                                     "key":  "token",
+                                                     "value":  "{{token}}",
+                                                     "type":  "string"
+                                                 }
+                                             ]
+                              }
+                 },
+                 {
+                     "name":  "Catatan",
+                     "item":  [
+                                  {
+                                      "name":  "Buat Catatan",
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 201 Created\u0027, () =\u003e pm.response.to.have.status(201));",
+                                                                                    "const body = pm.response.json();",
+                                                                                    "pm.test(\u0027judul tersimpan\u0027, () =\u003e pm.expect(body.data.judul).to.eql(\u0027Belajar Sanctum\u0027));",
+                                                                                    "pm.test(\u0027isi tersimpan\u0027, () =\u003e pm.expect(body.data.isi).to.include(\u0027token\u0027));",
+                                                                                    "pm.collectionVariables.set(\u0027postId\u0027, body.data.id);"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ],
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"judul\": \"Belajar Sanctum\",\n  \"isi\": \"Hari ini belajar membuat API dengan token Sanctum.\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/posts",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "posts"
+                                                                           ]
+                                                              }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Daftar Catatan",
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200 OK\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const body = pm.response.json();",
+                                                                                    "pm.test(\u0027data berupa array\u0027, () =\u003e pm.expect(body.data).to.be.an(\u0027array\u0027));",
+                                                                                    "pm.test(\u0027catatan milik user login ada\u0027, () =\u003e pm.expect(body.data.some((c) =\u003e c.id === pm.collectionVariables.get(\u0027postId\u0027))).to.eql(true));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ],
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/posts",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "posts"
+                                                                           ]
+                                                              }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Daftar Kategori (alias catatan)",
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200 OK\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "pm.test(\u0027data berupa array\u0027, () =\u003e pm.expect(pm.response.json().data).to.be.an(\u0027array\u0027));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ],
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/categories",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "categories"
+                                                                           ]
+                                                              }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Detail Catatan",
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200 OK\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const body = pm.response.json();",
+                                                                                    "pm.test(\u0027id sesuai\u0027, () =\u003e pm.expect(String(body.data.id)).to.eql(String(pm.collectionVariables.get(\u0027postId\u0027))));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ],
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/posts/{{postId}}",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "posts",
+                                                                               "{{postId}}"
+                                                                           ]
+                                                              }
+                                                  }
+                                  }
+                              ],
+                     "auth":  {
+                                  "type":  "bearer",
+                                  "bearer":  [
+                                                 {
+                                                     "key":  "token",
+                                                     "value":  "{{token}}",
+                                                     "type":  "string"
+                                                 }
+                                             ]
+                              }
+                 },
+                 {
+                     "name":  "Uji Negatif",
+                     "item":  [
+                                  {
+                                      "name":  "Register email duplikat",
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 422\u0027, () =\u003e pm.response.to.have.status(422));",
+                                                                                    "const body = pm.response.json();",
+                                                                                    "pm.test(\u0027ada error pada email\u0027, () =\u003e pm.expect(body.errors).to.have.property(\u0027email\u0027));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ],
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"name\": \"Siswa LKPD\",\n  \"email\": \"{{test_email}}\",\n  \"password\": \"password123\",\n  \"confirm_password\": \"password123\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/register",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "register"
+                                                                           ]
+                                                              }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Register password kurang dari 8",
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 422\u0027, () =\u003e pm.response.to.have.status(422));",
+                                                                                    "pm.test(\u0027ada error pada password\u0027, () =\u003e pm.expect(pm.response.json().errors).to.have.property(\u0027password\u0027));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ],
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"name\": \"Siswa Baru\",\n  \"email\": \"pendek{{$timestamp}}@gmail.com\",\n  \"password\": \"123\",\n  \"confirm_password\": \"123\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/register",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "register"
+                                                                           ]
+                                                              }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Register konfirmasi tidak cocok",
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 422\u0027, () =\u003e pm.response.to.have.status(422));",
+                                                                                    "pm.test(\u0027ada error pada confirm_password\u0027, () =\u003e pm.expect(pm.response.json().errors).to.have.property(\u0027confirm_password\u0027));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ],
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"name\": \"Siswa Baru\",\n  \"email\": \"beda{{$timestamp}}@gmail.com\",\n  \"password\": \"password123\",\n  \"confirm_password\": \"password321\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/register",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "register"
+                                                                           ]
+                                                              }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Login password salah",
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 401\u0027, () =\u003e pm.response.to.have.status(401));",
+                                                                                    "pm.test(\u0027status bernilai false\u0027, () =\u003e pm.expect(pm.response.json().status).to.eql(false));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ],
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"email\": \"{{test_email}}\",\n  \"password\": \"salahbanget\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/login",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "login"
+                                                                           ]
+                                                              }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Buat catatan judul kosong",
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 422\u0027, () =\u003e pm.response.to.have.status(422));",
+                                                                                    "pm.test(\u0027ada error pada judul\u0027, () =\u003e pm.expect(pm.response.json().errors).to.have.property(\u0027judul\u0027));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ],
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"judul\": \"\",\n  \"isi\": \"\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/posts",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "posts"
+                                                                           ]
+                                                              }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Buat catatan judul lebih dari 100 karakter",
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 422\u0027, () =\u003e pm.response.to.have.status(422));",
+                                                                                    "pm.test(\u0027ada error pada judul\u0027, () =\u003e pm.expect(pm.response.json().errors).to.have.property(\u0027judul\u0027));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ],
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"judul\": \"Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua ut enim ad minim veniam quis\",\n  \"isi\": \"Judul di atas lebih dari 100 karakter.\"\n}"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/posts",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "posts"
+                                                                           ]
+                                                              }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Akses profil tanpa token",
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 401\u0027, () =\u003e pm.response.to.have.status(401));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ],
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "auth":  {
+                                                                   "type":  "noauth"
+                                                               },
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/me",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "me"
+                                                                           ]
+                                                              }
+                                                  }
+                                  }
+                              ],
+                     "auth":  {
+                                  "type":  "bearer",
+                                  "bearer":  [
+                                                 {
+                                                     "key":  "token",
+                                                     "value":  "{{token}}",
+                                                     "type":  "string"
+                                                 }
+                                             ]
+                              }
+                 },
+                 {
+                     "name":  "Selesai (Logout)",
+                     "item":  [
+                                  {
+                                      "name":  "Logout",
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 200 OK\u0027, () =\u003e pm.response.to.have.status(200));",
+                                                                                    "const body = pm.response.json();",
+                                                                                    "pm.test(\u0027status bernilai true\u0027, () =\u003e pm.expect(body.status).to.eql(true));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ],
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/logout",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "logout"
+                                                                           ]
+                                                              }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "Profil setelah logout (token dicabut)",
+                                      "event":  [
+                                                    {
+                                                        "listen":  "test",
+                                                        "script":  {
+                                                                       "type":  "text/javascript",
+                                                                       "exec":  [
+                                                                                    "pm.test(\u0027Status 401\u0027, () =\u003e pm.response.to.have.status(401));"
+                                                                                ]
+                                                                   }
+                                                    }
+                                                ],
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+
+                                                                 ],
+                                                      "url":  {
+                                                                  "raw":  "{{baseUrl}}/me",
+                                                                  "host":  [
+                                                                               "{{baseUrl}}"
+                                                                           ],
+                                                                  "path":  [
+                                                                               "me"
+                                                                           ]
+                                                              }
+                                                  }
+                                  }
+                              ],
+                     "auth":  {
+                                  "type":  "bearer",
+                                  "bearer":  [
+                                                 {
+                                                     "key":  "token",
+                                                     "value":  "{{token}}",
+                                                     "type":  "string"
+                                                 }
+                                             ]
+                              }
+                 }
+             ]
+}
